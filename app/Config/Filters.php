@@ -34,6 +34,8 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
+        // ... otros aliases ...
+        'cors' => \App\Filters\Cors::class,
     ];
 
     /**
@@ -79,6 +81,7 @@ class Filters extends BaseFilters
         'after' => [
             // 'honeypot',
             // 'secureheaders',
+            'toolbar' 
         ],
     ];
 
@@ -95,7 +98,10 @@ class Filters extends BaseFilters
      *
      * @var array<string, list<string>>
      */
-    public array $methods = [];
+    public array $methods = [
+        // Aplica el filtro CORS solo a los métodos POST
+        'post' => ['cors'],
+    ];
 
     /**
      * List of filter aliases that should run on any
@@ -106,5 +112,10 @@ class Filters extends BaseFilters
      *
      * @var array<string, array<string, list<string>>>
      */
-    public array $filters = [];
+    public array $filters = [
+        'cors' => [
+            'before' => ['pxp/lib/rest/*'], // Aplica antes de que la ruta se ejecute
+            'after' => ['pxp/lib/rest/*'],  // Aplica después de que la ruta se ejecute
+        ],
+    ];
 }
