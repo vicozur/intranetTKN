@@ -88,7 +88,6 @@ $routes->post('directorio/clienteForm/update/(:num)', 'Administration\DirectoryF
 
 $routes->get('directorio/getcityList/(:num)', 'Administration\DirectoryFormController::getcityList/$1');
 
-
 //http://localhost/intranetTKN/public/directorio/getcityList/1
 
 $routes->post('directorio/save', 'Administration\DirectoryController::save');
