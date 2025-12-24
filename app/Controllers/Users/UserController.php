@@ -64,7 +64,7 @@ class UserController extends BaseController
         $data = [
             'username' => $username,
             'name' => $name,
-            'lastname' => $lastName,
+            'lastname' => strtoupper($lastName),
             'email' => $email,
             'phone' => $phone,
             'created_user' => $this->session->get('user') ?? 'system'

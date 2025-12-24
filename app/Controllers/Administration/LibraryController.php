@@ -85,7 +85,7 @@ class LibraryController extends BaseController
         $data = [
             'category_id'  => $this->request->getPost('categoryId'),
             'identifier'   => $identifier,
-            'name'         => $nameP,
+            'name'         => strtoupper($nameP),
             'created_user' => session('username') ?? 'system',
             'status'       => true
         ];

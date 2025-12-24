@@ -96,9 +96,9 @@ class DirectoryFormController extends BaseController
             'country_id' => $this->request->getPost('country'),
             'city_id' => $this->request->getPost('city'),
             'category_id' => $this->request->getPost('category'),
-            'company_name' => $this->request->getPost('company_name'),
-            'client_name' => $this->request->getPost('client_name'),
-            'client_post' => $this->request->getPost('client_post'),
+            'company_name' => strtoupper($this->request->getPost('company_name')),
+            'client_name' => strtoupper($this->request->getPost('client_name')),
+            'client_post' => strtoupper($this->request->getPost('client_post')),
             'email' => $this->request->getPost('email'),
             'created_user' => session()->get('user'),
             'status' => true
