@@ -3,7 +3,7 @@
 <script>
     const DIRECTORY_URL = "<?= base_url('directorio') ?>";
     // 🔑 Generamos las variables CSRF de forma segura
-    const CI_CSRF_NAME = '<?= csrf_token() ?>'; 
+    const CI_CSRF_NAME = '<?= csrf_token() ?>';
     const CI_CSRF_HASH = '<?= csrf_hash() ?>';
     // ✅ CORRECCIÓN CLAVE: Define la URL del JSON de idioma aquí.
     const DATATABLES_LANGUAGE_URL = "<?= base_url('assets/datatables/es-ES.json') ?>";
@@ -26,9 +26,8 @@
     <table class="table table-bordered table-hover table-sm display nowrap w-100" id="directoryTable">
         <thead>
             <tr>
-                <th>#</th>
-                <th>Empresa</th>
                 <th>Cliente</th>
+                <th>Empresa</th>
                 <th>Cargo</th>
                 <th>Email</th>
                 <th>Ciudad</th>

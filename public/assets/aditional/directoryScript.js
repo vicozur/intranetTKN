@@ -122,6 +122,8 @@ $(document).ready(function() {
     csrfData[CI_CSRF_NAME] = CI_CSRF_HASH; // Usando las constantes definidas en la vista
 
     directoryTable = $("#directoryTable").DataTable({
+        destroy: true,       // Añade esto: Destruye cualquier instancia previa
+        autoWidth: false,     // Añade esto: Evita cálculos de ancho que causan el error de estilo
         // 1. Configuración de DataTables
         processing: true,
         serverSide: true, // Crucial para la búsqueda/filtrado masivo
@@ -138,28 +140,26 @@ $(document).ready(function() {
             }
         },
 
-        // 3. Definición de Columnas (DEBE COINCIDIR EXACTAMENTE CON EL SELECT DEL MODELO)
         columns: [
-            // Índice 0: Contador de Fila (data: null, no ordenable en el servidor)
-            { data: null, orderable: false, searchable: false, render: (data, type, row, meta) => meta.row + 1 + meta.settings._iDisplayStart },
-            
-            // Índice 1-13: Columnas de datos reales
-            { data: "company_name" },      // 1
-            { data: "client_name" },       // 2
-            { data: "client_post" },       // 3
-            { data: "email" },             // 4
-            { data: "city_name" },         // 5 (Alias del join)
-            { data: "country_name" },      // 6 (Alias del join)
-            { data: "category_name" },     // 7 (Alias del join)
-            { data: "phones", orderable: false },    // 8 (STRING_AGG, no es seguro ordenar, mejor evitar)
-            { data: "addresses", orderable: false }, // 9 (STRING_AGG, no es seguro ordenar, mejor evitar)
-            { data: "created_user" },      // 10
-            { data: "created_at" },        // 11
-            {  // 12: Status
+            // Posición 0: Cliente (Ahora es la primera)
+            { data: "client_name" },
+            // Posición 1: Empresa (Ahora es la segunda)
+            { data: "company_name" },
+            // Posición 2 en adelante: Resto de datos
+            { data: "client_post" },
+            { data: "email" },
+            { data: "city_name" }, 
+            { data: "country_name" },
+            { data: "category_name" },
+            { data: "phones", orderable: false },
+            { data: "addresses", orderable: false },
+            { data: "created_user" },
+            { data: "created_at" },
+            { 
                 data: "status",
                 render: (data) => data ? '<span class="badge bg-success">Activo</span>' : '<span class="badge bg-danger">Inactivo</span>'
             },
-            {  // 13: Acciones (data: null, no ordenable ni searchable)
+            { 
                 data: null,
                 orderable: false,
                 searchable: false,
@@ -184,7 +184,7 @@ $(document).ready(function() {
             url: DATATABLES_LANGUAGE_URL
         },
         // Orden inicial (ej. por ID descendente)
-        order: [[1, 'desc']] 
+        order: [[0, 'desc']] 
     });
 });
 
