@@ -98,14 +98,26 @@ class DirectoryModel extends Model
         $builder = $this->_getDatatableQuery($request);
 
         // --- 3. SELECT con Agregación (STRING_AGG) ---
+        /*
         $builder->select("
             d.directory_id, d.company_name, d.client_name, d.client_post, d.email, 
             c.name AS city_name, co.name AS country_name, cat.name AS category_name, 
             STRING_AGG(DISTINCT p.number::text, ', ') AS phones,
             STRING_AGG(DISTINCT a.name, ', ') AS addresses,
             d.created_at, d.created_user, d.status
+        ", false); */
+        $builder->select("
+            d.directory_id, d.company_name, d.client_name, d.client_post, d.email, 
+            c.name AS city_name, co.name AS country_name, cat.name AS category_name, 
+            STRING_AGG(DISTINCT 
+                COALESCE(p.country_code::text || ' ', '') || 
+                COALESCE(p.region_code::text || ' ', '') || 
+                p.number::text, 
+                ', '
+            ) AS phones,
+            STRING_AGG(DISTINCT a.name, ', ') AS addresses,
+            d.created_at, d.created_user, d.status
         ", false);
-
         // --- 4. Ordenamiento (Asegúrate que el índice coincida con el array JS) ---
         if (isset($request['order'])) {
             $colIndex = $request['order'][0]['column'];

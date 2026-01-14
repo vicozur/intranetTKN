@@ -3,7 +3,9 @@ function addPhone() {
     const div = document.createElement('div');
     div.className = 'input-group mb-2';
     div.innerHTML = `
-        <input type="text" name="phonelist[]" class="form-control" required>
+        <input type="text" name="countrycode[]" class="form-control" placeholder="cod. Pais" required>
+        <input type="text" name="regioncode[]" class="form-control" placeholder="cod. Ciudad" required>
+        <input type="text" name="phonelist[]" class="form-control" placeholder="Número Telefónico" required>
         <input type="text" name="internal_code[]" class="form-control" placeholder="Nro. Interno (opcional)">
         <button type="button" class="btn btn-danger" onclick="removeElement(this)">-</button>
     `;
@@ -82,6 +84,8 @@ document.getElementById('myForm').addEventListener('submit', function(e) {
     const url = id ? `${CLIENT_URL}/clienteForm/update/${id}` : `${CLIENT_URL}/clienteForm/create`;
 
     // 🔥 obtener arrays completos
+    const countries = formData.getAll("countrycode[]");
+    const regions = formData.getAll("regioncode[]");
     const phones = formData.getAll("phonelist[]");
     const internals = formData.getAll("internal_code[]");
 
@@ -128,3 +132,5 @@ document.getElementById('myForm').addEventListener('submit', function(e) {
         }
     });
 });
+
+

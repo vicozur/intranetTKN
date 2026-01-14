@@ -28,6 +28,7 @@ class DirectoryFormController extends BaseController
 
     public function index($id=null)
     {
+        
         $data = [
             'title' => "Cliente Form",
             'titleMod' => "Formulario de Cliente",
@@ -118,6 +119,8 @@ class DirectoryFormController extends BaseController
             // --- Guardar teléfonos ---
             $phones = $this->request->getPost('phonelist');          // array de números
             $internals = $this->request->getPost('internal_code'); // array de internos
+            $countries = $this->request->getPost('countrycode'); // array de internos
+            $regionals = $this->request->getPost('regioncode'); // array de internos
 
             if ($phones && is_array($phones)) {
                 $phoneModel = new PhoneModel();
@@ -125,8 +128,8 @@ class DirectoryFormController extends BaseController
                     if (!empty($number)) { // evita insertar vacíos
                         $phoneModel->insert([
                             'directory_id'  => $directoryId,
-                            'country_code'  => $countryCode,
-                            'region_code'     => $cityCode,
+                            'country_code'  => !empty($countries[$idx]) ? $countries[$idx] : null,
+                            'region_code'   => !empty($regionals[$idx]) ? $regionals[$idx] : null,
                             'number'        => $number,
                             'internal_code' => !empty($internals[$idx]) ? $internals[$idx] : null,
                             'created_user'  => session()->get('userId'),
@@ -173,9 +176,7 @@ class DirectoryFormController extends BaseController
         $db->transStart();
 
         try {
-            // Actualizar datos básicos
-            $cityCountryData = $this->cityModel->getCityById($this->request->getPost('city'));
-
+            // 1. Actualizar datos básicos del Directorio
             $this->directoryModel->update($id, [
                 'category_id'  => $this->request->getPost('category'),
                 'country_id'   => $this->request->getPost('country'),
@@ -186,47 +187,21 @@ class DirectoryFormController extends BaseController
                 'email'        => $this->request->getPost('email'),
             ]);
 
-            // Actualizar teléfonos: borrar anteriores y volver a insertar
-            //$this->phoneModel->where('directory_id', $id)->delete();
-            $phoneList = $this->phoneModel->getPhoneByDirectoryId($id); 
-            for ($i=0; $i < count($phoneList); $i++) { 
-                
-            }
-            $phones = $this->request->getPost('phone');
-            if ($phones) {
-                foreach ($phones as $p) {
-                    if (trim($p) != '') {
-                        $this->phoneModel->insert([
-                            'directory_id' => $id,
-                            'number'       => $p,
-                            'country_code' => $cityCountryData["country_code"],
-                            'city_code' => $cityCountryData["city_code"],
-                            'created_user' => session()->get('userId'),
-                        ]);
-                    }
-                }
-            }
+            // 2. PROCESAR TELÉFONOS
+            $this->syncPhones($id);
 
-            // Actualizar direcciones: igual, borrar e insertar
-            $this->addressModel->where('directory_id', $id)->delete();
-            $addresses = $this->request->getPost('address');
-            if ($addresses) {
-                foreach ($addresses as $a) {
-                    if (trim($a) != '') {
-                        $this->addressModel->insert([
-                            'directory_id' => $id,
-                            'name'         => $a,
-                            'created_user' => session()->get('userId'),
-                        ]);
-                    }
-                }
-            }
+            // 3. PROCESAR DIRECCIONES
+            $this->syncAddresses($id);
 
             $db->transComplete();
 
+            if ($db->transStatus() === false) {
+                throw new \Exception("Error al completar la transacción.");
+            }
+
             return $this->response->setJSON([
                 'status'  => 'success',
-                'message' => 'Cliente actualizado con éxito'
+                'message' => 'Registro actualizado con éxito'
             ]);
         } catch (\Exception $e) {
             $db->transRollback();
@@ -235,5 +210,86 @@ class DirectoryFormController extends BaseController
                 'message' => $e->getMessage()
             ]);
         }
+    }
+
+    private function syncPhones($directoryId)
+    {
+        $phones    = $this->request->getPost('phonelist') ?? [];
+        $internals = $this->request->getPost('internal_code') ?? [];
+        $countries = $this->request->getPost('countrycode') ?? [];
+        $regionals = $this->request->getPost('regioncode') ?? [];
+
+        // Obtenemos los teléfonos actuales de la BD
+        $currentPhones = $this->phoneModel->where('directory_id', $directoryId)->findAll();
+        $currentCount = count($currentPhones);
+        $newCount = count($phones);
+
+        // Iteramos basándonos en el máximo de ambos para cubrir todos los casos
+        $max = max($currentCount, $newCount);
+
+        for ($i = 0; $i < $max; $i++) {
+            $data = [
+                'directory_id'  => $directoryId,
+                'country_code'  => $countries[$i] ?? null,
+                'region_code'   => $regionals[$i] ?? null,
+                'number'        => $phones[$i] ?? null,
+                'internal_code' => $internals[$i] ?? null,
+                'status'        => true
+            ];
+
+            if ($i < $newCount && $i < $currentCount) {
+                // CASO 1: Existe en ambos -> ACTUALIZAR
+                $this->phoneModel->update($currentPhones[$i]['phone_id'], $data);
+            } elseif ($i < $newCount) {
+                // CASO 2: Hay más en formulario -> INSERTAR
+                $data['created_user'] = session()->get('userId');
+                $this->phoneModel->insert($data);
+            } elseif ($i < $currentCount) {
+                // CASO 3: Hay menos en formulario -> ELIMINAR
+                $this->phoneModel->delete($currentPhones[$i]['phone_id']);
+            }
+        }
+    }
+
+    private function syncAddresses($directoryId)
+    {
+        $addressesForm = $this->request->getPost('address') ?? [];
+        $currentAddresses = $this->addressModel->where('directory_id', $directoryId)->findAll();
+
+        $currentCount = count($currentAddresses);
+        $newCount = count($addressesForm);
+        $max = max($currentCount, $newCount);
+
+        for ($i = 0; $i < $max; $i++) {
+            if ($i < $newCount && !empty(trim($addressesForm[$i]))) {
+                $data = [
+                    'directory_id' => $directoryId,
+                    'name'         => $addressesForm[$i],
+                    'created_user' => session()->get('userId')
+                ];
+
+                if ($i < $currentCount) {
+                    // ACTUALIZAR
+                    $this->addressModel->update($currentAddresses[$i]['address_id'], $data);
+                } else {
+                    // INSERTAR NUEVO
+                    $this->addressModel->insert($data);
+                }
+            } elseif ($i < $currentCount) {
+                // ELIMINAR SI EL FORMULARIO TRAE MENOS
+                $this->addressModel->delete($currentAddresses[$i]['address_id']);
+            }
+        }
+    }
+
+    
+
+    public function cancel()
+    {
+        // Opcional: registrar logs o limpiar datos de sesión
+        // session()->remove('temp_data');
+
+        return redirect()->to(site_url('directorio'))
+            ->with('info', 'Operación cancelada por el usuario.');
     }
 }

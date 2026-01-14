@@ -31,4 +31,12 @@ class PhoneModel extends Model
                     ->findAll();
     }
 
+    public function getPhoneListId($id)
+    {
+        return $this->db->table('directory.phone')
+            ->where('directory_id', $id)
+            ->get()
+            ->getResultArray();
+    }
+
 }

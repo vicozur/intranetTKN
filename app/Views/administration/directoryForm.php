@@ -8,6 +8,11 @@
 
 <!-- Start row container-->
 <div class="row">
+    <div>
+        <a href="<?= site_url('directorio') ?>"
+            class=" float-end" style="text-decoration: none; color: purple"></i> Volver a Directorio
+        </a>
+    </div>
     <!-- Start row Registro fisico de poste-->
     <form id="myForm">
         <div>
@@ -84,6 +89,8 @@
                         <?php $contador = 1; ?>
                         <?php foreach ($phones as $p): ?>
                             <div class="input-group mb-2">
+                                <input type="text" name="countrycode[]" class="form-control" value="<?= esc($p['country_code']) ?>" required>
+                                <input type="text" name="regioncode[]" class="form-control" value="<?= esc($p['region_code']) ?>" required>
                                 <input type="text" name="phonelist[]" class="form-control" value="<?= esc($p['number']) ?>" required>
                                 <input type="text" name="internal_code[]" class="form-control" value="<?= esc($p['internal_code']) ?>">
                                 <?php if ($contador == 1): ?>
@@ -96,6 +103,8 @@
                         <?php endforeach; ?>
                     <?php else: ?>
                         <div class="input-group mb-2">
+                            <input type="text" name="countrycode[]" class="form-control" placeholder="cod. Pais" required>
+                            <input type="text" name="regioncode[]" class="form-control" placeholder="cod. Ciudad" required>
                             <input type="text" name="phonelist[]" class="form-control" placeholder="Número telef&oacute;nico" required>
                             <input type="text" name="internal_code[]" class="form-control" placeholder="Nro. Interno (opcional)">
                             <button type="button" class="btn btn-success" onclick="addPhone()">+</button>
@@ -140,6 +149,11 @@
             <!-- Submit -->
             <div class="mt-3 text-end">
                 <button type="submit" class="btn btn-success">Guardar</button>
+                <a href="<?= site_url('directorio') ?>"
+                    class="btn btn-danger btn-flat float-end"
+                    onclick="return confirm('¿Estás seguro de que deseas cancelar? Se perderán los cambios no guardados.')">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
             </div>
         </div>
     </form>

@@ -16,7 +16,6 @@
 <!-- Start row container-->
 <div class="row">
     <div>
-        <button class="btn  btn-flat float-end" style="background-color: purple; color:white;" onclick="openFileUploadModal()"><b>Importar</b></button>
         <button class="btn btn-primary btn-flat float-end" onclick="openForm()"><b>Nuevo cliente</b></button>
     </div>
     <hr>
