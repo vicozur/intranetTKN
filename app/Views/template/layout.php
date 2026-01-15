@@ -157,6 +157,13 @@
                             <!--end::User Image-->
                             <!--begin::Menu Footer-->
                             <li class="user-footer">
+                                <a href="#"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalCambiarPassword"
+                                    class="float-end"
+                                    style="text-decoration: none; color: darkblue">
+                                    <b>Cambiar Contrase&ntilde;a</b>
+                                </a><br>
                                 <form action="<?= site_url('logout') ?>" method="post">
                                     <button type="submit" class="btn btn-default btn-flat float-end"><b>Sign out</b></button>
                                 </form>
@@ -283,7 +290,43 @@
     </div>
     <!--end::App Wrapper-->
 
+    <div class="modal fade" id="modalCambiarPassword" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Actualizar Contraseña</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formCambiarPassword">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña Actual</label>
+                            <input type="password" name="current_password" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nueva Contraseña</label>
+                            <input type="password" name="new_password" id="new_password" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirmar Nueva Contraseña</label>
+                            <input type="password" name="confirm_password" class="form-control" required>
+                        </div>
+                        <div id="passwordError" class="text-danger small" style="display:none;">Las contraseñas no coinciden.</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
     <script>
+        
+    </script>
+    <script>
+        const AUTHPAS = "<?= base_url('changePass') ?>";
         $(document).ready(function() {
             $('#tablaDatos').DataTable({
                 responsive: true,
@@ -293,7 +336,7 @@
             });
         });
     </script>
-
+    <script src="<?= base_url('assets/aditional/security.js') ?>"></script>
     <!--end::Script-->
 </body>
 <!--end::Body-->

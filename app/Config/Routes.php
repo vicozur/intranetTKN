@@ -38,10 +38,12 @@ $routes->setAutoRoute(false);
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->get('codeigniter', 'Home::index');
+
 // Paginas de autenicacion
 $routes->get('/', 'LoginController::index');           // Muestra formulario de login
 $routes->post('login', 'LoginController::login');      // Procesa login
 $routes->post('logout', 'LoginController::logout');    // Cierra sesión
+$routes->post('changePass', 'LoginController::updatePassword');    // Cambio Password
 $routes->get('home', 'HomeController::index');         // Página después del login
 
 // Paginas de configuracion rubro
