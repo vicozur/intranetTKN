@@ -7,6 +7,7 @@ use App\Models\CategoryModel;
 use App\Models\CityModel;
 use App\Models\CountryModel;
 use App\Models\DirectoryModel;
+use App\Models\ImagencardModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -221,4 +222,54 @@ class DirectoryController extends BaseController
         return $resultados_finales;
     }
 
+
+    /**
+     * 📁 Subida de archivos asociados a una librería
+     */
+    public function uploadFile()
+    {
+        helper(['form', 'filesystem']);
+
+        $directoryId = $this->request->getPost('upload_library_id');
+        $files = $this->request->getFiles();
+
+        if (!$directoryId || !isset($files['files'])) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Faltan datos para procesar la carga'
+            ]);
+        }
+
+        $uploadPath = WRITEPATH . '../public/uploads/directory/' . $directoryId . '/';
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        $fileModel = new ImagencardModel();
+        $savedFiles = [];
+
+        foreach ($files['files'] as $file) {
+            if ($file->isValid() && !$file->hasMoved()) {
+                $newName = $file->getRandomName();
+                $file->move($uploadPath, $newName);
+
+                $fileData = [
+                    'directory_id'  => $directoryId,
+                    'name'        => $file->getClientName(),
+                    'extencion'   => $file->getClientExtension(),
+                    'url'         => 'uploads/directory/' . $directoryId . '/' . $newName,
+                    'created_user' => session('username') ?? 'system',
+                    'status'      => true,
+                ];
+
+                $fileModel->insert($fileData);
+                $savedFiles[] = $fileData;
+            }
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'files'   => $savedFiles
+        ]);
+    }
 }

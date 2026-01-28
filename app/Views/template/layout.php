@@ -281,7 +281,7 @@
             <!--begin::Copyright-->
             <strong>
                 Copyright &copy; 2025-2036&nbsp;
-                <a href="https://adminlte.io" class="text-decoration-none">I.S.T. Zurita</a>.
+                <a href="https://tkn-global.com" class="text-decoration-none">TKN S.R.L.</a>.
             </strong>
             All rights reserved.
             <!--end::Copyright-->

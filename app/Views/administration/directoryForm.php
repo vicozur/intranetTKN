@@ -111,7 +111,6 @@
                         </div>
                     <?php endif; ?>
                 </div>
-
             </div>
 
             <!-- Addresses dinámicos -->
@@ -160,6 +159,8 @@
 
     <hr>
 </div>
+
+
 
 <script src="<?= base_url('assets/aditional/client.js') ?>"></script>
 <?php $this->endSection(); ?>

@@ -34,9 +34,8 @@
                 <th>Categoría</th>
                 <th>Teléfonos</th>
                 <th>Direcciones</th>
-                <th>Usuario</th>
-                <th>Fecha</th>
                 <th>Estado</th>
+                <th>Imagenes</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -48,6 +47,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form id="uploadForm" enctype="multipart/form-data">
+                <input type="hidden" id="upload_library_id" name="upload_library_id">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="uploadModalTitle">Importar Archivo</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>

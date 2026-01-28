@@ -81,6 +81,7 @@ $routes->post('proyecto/toggleStatus/(:num)', 'Administration\LibraryController:
 $routes->get('directorio', 'Administration\DirectoryController::index');
 $routes->post('directorio/getData', 'Administration\DirectoryController::getData');
 $routes->post('directorio/importar', 'Administration\DirectoryController::importar');
+$routes->post('directorio/file', 'Administration\DirectoryController::uploadFile');
 
 // Paginas de configuracion directorio Form
 $routes->get('directorio/clienteForm/(:num)', 'Administration\DirectoryFormController::index/$1');

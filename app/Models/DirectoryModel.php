@@ -118,6 +118,22 @@ class DirectoryModel extends Model
             STRING_AGG(DISTINCT a.name, ', ') AS addresses,
             d.created_at, d.created_user, d.status
         ", false);
+
+        // Dentro de getDataTable
+        $builder->select("
+            d.directory_id, d.company_name, d.client_name, d.client_post, d.email, 
+            c.name AS city_name, co.name AS country_name, cat.name AS category_name, 
+            STRING_AGG(DISTINCT p.number::text, ', ') AS phones,
+            STRING_AGG(DISTINCT a.name, ', ') AS addresses,
+            -- Concatenamos nombre y url separados por ::: y cada par separado por |
+            STRING_AGG(DISTINCT img.name || ':::' || img.url, '|' ) AS imagenes_data, 
+            d.created_at, d.created_user, d.status
+        ", false);
+
+        $builder->join('directory.imagencard img', 'img.directory_id = d.directory_id', 'left');
+
+        // No olvides agregar img.name e img.url al GROUP BY o fallará PostgreSQL
+        $builder->groupBy('d.directory_id, d.company_name, d.client_name, d.client_post, d.email, c.name, co.name, cat.name, d.created_at, d.created_user, d.status');
         // --- 4. Ordenamiento (Asegúrate que el índice coincida con el array JS) ---
         if (isset($request['order'])) {
             $colIndex = $request['order'][0]['column'];
