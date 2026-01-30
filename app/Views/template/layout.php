@@ -281,7 +281,7 @@
             <!--begin::Copyright-->
             <strong>
                 Copyright &copy; 2025-2036&nbsp;
-                <a href="https://tkn-global.com" target="_blank"  class="text-decoration-none">TKN S.R.L.</a>.
+                <a href="https://tkn-global.com" target="_blank" class="text-decoration-none">TKN S.R.L.</a>.
             </strong>
             All rights reserved.
             <!--end::Copyright-->
