@@ -186,44 +186,90 @@ $("#uploadForm").on("submit", function (e) {
     let formData = new FormData(this);
 
     Swal.fire({
-            title: `¿Desea registrar archivos elegidos para el proyecto ?`,
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Sí, continuar",
-            cancelButtonText: "Cancelar",
-        }).then((r) => {
-            if (r.isConfirmed) {
+        title: '¿Desea registrar los archivos?',
+        text: "La subida puede tardar dependiendo del tamaño de los archivos.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, subir",
+        cancelButtonText: "Cancelar",
+    }).then((r) => {
+        if (r.isConfirmed) {
                 $.ajax({
-                    url: `${PROYECTO_URL}/file` ,
-                    type: "POST",
-                    data: formData,
-                    processData: false, // necesario
-                    contentType: false, // necesario
-                    beforeSend: function () {
-                        $("#uploadForm button[type='submit']").prop("disabled", true).text("Subiendo...");
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            libraryTable.ajax.reload();
-                            Swal.fire("Éxito", "Archivos subidos correctamente", "success");
-                            $("#fileModal").modal("hide");
-                            $("#uploadForm")[0].reset();
-                            $("#fileList").html("");
-                        } else {
-                            Swal.fire("Error", response.message, "error");
+                url: `${PROYECTO_URL}/file`,
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                // Agregamos esto para manejar archivos grandes sin que la UI se congele
+                xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener(
+                    "progress",
+                    function (evt) {
+                        if (evt.lengthComputable) {
+                        var percentComplete = Math.round(
+                            (evt.loaded / evt.total) * 100,
+                        );
+                        // Opcional: Actualizar un texto o barra de progreso
+                        $("#uploadForm button[type='submit']").text(
+                            `Subiendo... ${percentComplete}%`,
+                        );
                         }
                     },
-                    error: function (xhr) {
-                        console.error(xhr.responseText);
-                        Swal.fire("Error", "Ocurrió un error al subir los archivos", "error");
-                    },
-                    complete: function () {
-                        $("#uploadForm button[type='submit']").prop("disabled", false).text("Guardar");
-                    }
-                });
-            }
-        });
+                    false,
+                    );
+                    return xhr;
+                },
+                beforeSend: function () {
+                    $("#uploadForm button[type='submit']")
+                    .prop("disabled", true)
+                    .text("Iniciando subida...");
+                },
+                success: function (response) {
+                    let res =
+                    typeof response === "object"
+                        ? response
+                        : JSON.parse(response);
 
+                    if (res.success) {
+                    // 1. Refrescar la tabla manteniendo posición, filtros y página (índice)
+                    // Esto evita que el usuario vuelva a la página 1
+                    if (typeof libraryTable !== "undefined") {
+                        libraryTable.ajax.reload(null, false);
+                    }
+
+                    // 2. Notificar éxito
+                    Swal.fire(
+                        "Éxito",
+                        "Archivos subidos correctamente",
+                        "success",
+                    );
+
+                    // 3. Limpiar y cerrar
+                    $("#fileModal").modal("hide");
+                    $("#uploadForm")[0].reset();
+                    $("#fileList").html("");
+                    } else {
+                    Swal.fire("Error", response.message, "error");
+                    }
+                },
+                error: function (xhr) {
+                    let errorMsg = "Ocurrió un error en el servidor";
+                    if (xhr.status === 413)
+                    errorMsg =
+                        "El archivo es demasiado grande para el servidor (Límite excedido)";
+
+                    Swal.fire("Error", errorMsg, "error");
+                    console.error(xhr.responseText);
+                },
+                complete: function () {
+                    $("#uploadForm button[type='submit']")
+                    .prop("disabled", false)
+                    .text("Guardar");
+                },
+                });
+        }
+    });
 });
 
 
