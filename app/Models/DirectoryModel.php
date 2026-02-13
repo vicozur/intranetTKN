@@ -47,7 +47,7 @@ class DirectoryModel extends Model
         // JOINS 1-a-N que requieren agregación (STRING_AGG)
         $builder->join('phone p', 'p.directory_id = d.directory_id', 'left');
         $builder->join('address a', 'a.directory_id = d.directory_id', 'left');
-/*
+        /*
         // --- 2. Lógica de Búsqueda global (Server-Side) ---
         if (!empty($request['search']['value'])) {
             $search = $request['search']['value'];
@@ -97,49 +97,40 @@ class DirectoryModel extends Model
     {
         $builder = $this->_getDatatableQuery($request);
 
-        // --- 3. SELECT con Agregación (STRING_AGG) ---
-        /*
+        // 1. Unificamos el SELECT y agregamos los prefijos de teléfono
         $builder->select("
-            d.directory_id, d.company_name, d.client_name, d.client_post, d.email, 
-            c.name AS city_name, co.name AS country_name, cat.name AS category_name, 
-            STRING_AGG(DISTINCT p.number::text, ', ') AS phones,
-            STRING_AGG(DISTINCT a.name, ', ') AS addresses,
-            d.created_at, d.created_user, d.status
-        ", false); */
-        $builder->select("
-            d.directory_id, d.company_name, d.client_name, d.client_post, d.email, 
-            c.name AS city_name, co.name AS country_name, cat.name AS category_name, 
-            STRING_AGG(DISTINCT 
-                COALESCE(p.country_code::text || ' ', '') || 
-                COALESCE(p.region_code::text || ' ', '') || 
-                p.number::text, 
-                ', '
-            ) AS phones,
-            STRING_AGG(DISTINCT a.name, ', ') AS addresses,
-            d.created_at, d.created_user, d.status
-        ", false);
+        d.directory_id, 
+        d.company_name, 
+        d.client_name, 
+        d.client_post, 
+        d.email, 
+        c.name AS city_name, 
+        co.name AS country_name, 
+        cat.name AS category_name, 
+        -- Concatenamos Código País + Código Región + Número
+        STRING_AGG(DISTINCT 
+            COALESCE('+' || p.country_code::text || ' ', '') || 
+            COALESCE('(' || p.region_code::text || ') ', '') || 
+            p.number::text, 
+            ', '
+        ) AS phones,
+        STRING_AGG(DISTINCT a.name, ', ') AS addresses,
+        -- Datos de imágenes (Cada par nombre:::url separado por |)
+        STRING_AGG(DISTINCT img.name || ':::' || img.url, '|' ) AS imagenes_data, 
+        d.created_at, 
+        d.created_user, 
+        d.status
+    ", false);
 
-        // Dentro de getDataTable
-        $builder->select("
-            d.directory_id, d.company_name, d.client_name, d.client_post, d.email, 
-            c.name AS city_name, co.name AS country_name, cat.name AS category_name, 
-            STRING_AGG(DISTINCT p.number::text, ', ') AS phones,
-            STRING_AGG(DISTINCT a.name, ', ') AS addresses,
-            -- Concatenamos nombre y url separados por ::: y cada par separado por |
-            STRING_AGG(DISTINCT img.name || ':::' || img.url, '|' ) AS imagenes_data, 
-            d.created_at, d.created_user, d.status
-        ", false);
+        // 2. El JOIN de imágenes debe estar aquí (asegúrate de que la tabla sea correcta)
+        // Si la tabla se llama 'imagencard', el join es así:
+        $builder->join('imagencard img', 'img.directory_id = d.directory_id', 'left');
 
-        $builder->join('directory.imagencard img', 'img.directory_id = d.directory_id', 'left');
-
-        // No olvides agregar img.name e img.url al GROUP BY o fallará PostgreSQL
-        $builder->groupBy('d.directory_id, d.company_name, d.client_name, d.client_post, d.email, c.name, co.name, cat.name, d.created_at, d.created_user, d.status');
-        // --- 4. Ordenamiento (Asegúrate que el índice coincida con el array JS) ---
+        // 3. Ordenamiento
         if (isset($request['order'])) {
             $colIndex = $request['order'][0]['column'];
             $dir      = $request['order'][0]['dir'];
 
-            // Mapeo de columnas (se usa el índice del DataTables - 1 si el índice 0 en JS es 'data: null')
             $orderColumns = [
                 'd.directory_id',
                 'd.company_name',
@@ -156,8 +147,6 @@ class DirectoryModel extends Model
                 'd.status'
             ];
 
-            // El índice 0 en JS es el contador (data: null). El índice 1 en JS es d.company_name.
-            // Si $colIndex > 0 (no es el contador/acciones), ordenamos usando el índice ajustado.
             if ($colIndex > 0 && isset($orderColumns[$colIndex - 1])) {
                 $builder->orderBy($orderColumns[$colIndex - 1], $dir);
             }
@@ -165,14 +154,13 @@ class DirectoryModel extends Model
             $builder->orderBy('d.directory_id', 'DESC');
         }
 
-        // --- 5. Agrupamiento Obligatorio (PostgreSQL) ---
-        // Se agrupa por todas las columnas que no son agregadas.
+        // 4. GROUP BY Obligatorio (PostgreSQL requiere todas las columnas no agregadas)
         $builder->groupBy('
-            d.directory_id, d.company_name, d.client_name, d.client_post, d.email, 
-            c.name, co.name, cat.name, d.created_at, d.created_user, d.status
-        ');
+        d.directory_id, d.company_name, d.client_name, d.client_post, d.email, 
+        c.name, co.name, cat.name, d.created_at, d.created_user, d.status
+    ');
 
-        // --- 6. Paginación ---
+        // 5. Paginación
         if ($request['length'] != -1) {
             $builder->limit($request['length'], $request['start']);
         }
