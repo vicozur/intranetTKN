@@ -26,7 +26,7 @@ class LibraryController extends BaseController
         $data = [
             'title' => "Proyectos",
             'titleMod' => "Administrar Info. Proyectos",
-            'categoryList' => $this->categoryModel->getCategoryByClasifier("Proyectos") 
+            'categoryList' => $this->categoryModel->getCategoryByClasifier("Proyectos")
         ];
 
         return view('administration/library', $data);
@@ -125,7 +125,7 @@ class LibraryController extends BaseController
         }
 
         if (empty($id)) {
-             unset($data['library_id']); // 🔹 No enviar el ID al insertar
+            unset($data['library_id']); // 🔹 No enviar el ID al insertar
             $inserted = $this->libraryModel->insert($data);
             if ($inserted) {
                 return $this->response->setJSON([
@@ -142,7 +142,6 @@ class LibraryController extends BaseController
                 ]);
             }
         }
-
     }
 
     /**
@@ -152,22 +151,32 @@ class LibraryController extends BaseController
     {
         helper(['form', 'filesystem']);
 
-        $libraryId = $this->request->getPost('upload_library_id');
-        $files = $this->request->getFiles();
+        $libraryId   = $this->request->getPost('upload_library_id');
+        $tipoCarga   = $this->request->getPost('tipo_carga'); // 0 = Solo archivo, 1 = En carpeta
+        $carpetaName = trim($this->request->getPost('carpetaName') ?? '');
+        $files       = $this->request->getFiles();
 
         if (!$libraryId || !isset($files['files'])) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Faltan datos para procesar la carga'
-            ]);
+            return $this->response->setJSON(['success' => false, 'message' => 'Faltan datos']);
         }
 
-        $uploadPath = WRITEPATH . '../public/uploads/library/' . $libraryId . '/';
+        // --- USO DE tipo_carga PARA ARMAR EL PATH ---
+        // Si tipo_carga es "1" Y el nombre no está vacío, usamos la subcarpeta.
+        // De lo contrario, forzamos la ruta a la raíz del proyecto.
+        $subPath = ($tipoCarga === "1" && $carpetaName !== "") ? $carpetaName . '/' : "";
+
+        $fullRelativePath = 'uploads/library/' . $libraryId . '/' . $subPath;
+        $uploadPath       = FCPATH . $fullRelativePath;
+
+        // --- VERIFICACIÓN Y CREACIÓN ---
         if (!is_dir($uploadPath)) {
-            mkdir($uploadPath, 0777, true);
+            // El tercer parámetro 'true' permite crear libraryId y subPath al mismo tiempo
+            if (!mkdir($uploadPath, 0777, true)) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Error al crear directorio']);
+            }
         }
 
-        $fileModel = new \App\Models\FileModel();
+        $fileModel  = new \App\Models\FileModel();
         $savedFiles = [];
 
         foreach ($files['files'] as $file) {
@@ -176,12 +185,12 @@ class LibraryController extends BaseController
                 $file->move($uploadPath, $newName);
 
                 $fileData = [
-                    'library_id'  => $libraryId,
-                    'name'        => $file->getClientName(),
-                    'extencion'   => $file->getClientExtension(),
-                    'url'         => 'uploads/library/' . $libraryId . '/' . $newName,
+                    'library_id'   => $libraryId,
+                    'name'         => $file->getClientName(),
+                    'extencion'    => $file->getClientExtension(),
+                    'url'          => $fullRelativePath . $newName, // URL dinámica
                     'created_user' => session('username') ?? 'system',
-                    'status'      => true,
+                    'status'       => true,
                 ];
 
                 $fileModel->insert($fileData);
@@ -189,10 +198,7 @@ class LibraryController extends BaseController
             }
         }
 
-        return $this->response->setJSON([
-            'success' => true,
-            'files'   => $savedFiles
-        ]);
+        return $this->response->setJSON(['success' => true, 'files' => $savedFiles]);
     }
 
 
@@ -212,6 +218,5 @@ class LibraryController extends BaseController
 
         $msg = $newStatus ? 'Registro activado' : 'Registro desactivado';
         return $this->response->setJSON(['status' => 'success', 'message' => $msg]);
-    } 
-    
+    }
 }

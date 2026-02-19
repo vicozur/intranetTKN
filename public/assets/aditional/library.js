@@ -1,5 +1,17 @@
 let libraryTable;
 
+$(document).ready(function() {
+    // Escucha cambios en los radios por su nombre
+    $('input[name="tipo_carga"]').on('change', function() {
+        if ($('#optCarpeta').is(':checked')) {
+            $('#divCarpetaName').fadeIn();
+        } else {
+            $('#divCarpetaName').fadeOut();
+            $('#carpetaName').val(''); // Borra el contenido al ocultar
+        }
+    });
+});
+
 document.addEventListener("DOMContentLoaded", function () {
     const fileInput = document.getElementById("files");
     const fileList = document.getElementById("fileList");

@@ -83,21 +83,38 @@
         <div class="modal-content">
             <form id="uploadForm" enctype="multipart/form-data">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="uploadModalTitle">Nuevo Proyecto</h5>
+                    <h5 class="modal-title" id="uploadModalTitle">Subir Archivos</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="upload_library_id" name="upload_library_id">
-                    <div class="mb-3">
-                        <label for="files" class="form-label">Archivos</label>
-                        <input type="file" class="form-control" id="files" name="files[]" multiple>
+
+                    <div class="row mb-3">
+                        <div class="form-check col-md-6">
+                            <input class="form-check-input" type="radio" name="tipo_carga" id="optCarpeta" value="1">
+                            <label class="form-check-label" for="optCarpeta">En carpeta</label>
+                        </div>
+                        <div class="form-check col-md-6">
+                            <input class="form-check-input" type="radio" name="tipo_carga" id="optArchivo" value="0" checked>
+                            <label class="form-check-label" for="optArchivo">Solo archivo</label>
+                        </div>
                     </div>
-                    <!-- 🔹 Aquí se mostrarán los nombres -->
+
+                    <div id="divCarpetaName" class="mb-3" style="display: none;">
+                        <label class="form-label">Nombre de la Carpeta</label>
+                        <input type="text" class="form-control" id="carpetaName" name="carpetaName" placeholder="Ej: Planos_Finales">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="files" class="form-label">Seleccionar Archivos</label>
+                        <input type="file" class="form-control" id="files" name="files[]" multiple required>
+                    </div>
+
                     <ul id="fileList" class="list-group mt-2"></ul>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="submit" class="btn btn-primary">Subir y Guardar</button>
                 </div>
             </form>
         </div>
