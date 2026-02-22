@@ -102,29 +102,35 @@ $(document).ready(function () {
             {
                 data: "files",
                 render: function (files) {
-                    if (!Array.isArray(files) || files.length === 0) {
-                        return `<span class="text-muted">Sin archivos</span>`;
-                    }
+    if (!Array.isArray(files) || files.length === 0) {
+        return `<span class="text-muted">Sin archivos</span>`;
+    }
 
-                    let list = `<ul class="list-unstyled mb-0">`;
-                    files.forEach((f) => {
-                        // Evaluamos si existe el dato de carpeta
-                        // Si f.carpeta existe, añadimos la carpeta y el separador, si no, cadena vacía
-                        let displayName =
-                        f.carpeta && f.carpeta.trim() !== ""
-                            ? `${f.carpeta}/${f.name}`
-                            : f.name;
+    let list = `<ul class="list-unstyled mb-0">`;
+    files.forEach((f) => {
+        let displayNameHTML = '';
+        let titleText = ''; // Para el atributo title (sin HTML)
 
-                        list += `
-                <li>
-                    <a href="${BASE_URL}${f.url}" target="_blank" title="${displayName}">
-                        <i class="bi bi-paperclip"></i> ${displayName}
-                    </a>
-                </li>`;
-                    });
-                    list += `</ul>`;
-                    return list;
-                    }
+        if (f.carpeta && f.carpeta.trim() !== "") {
+            // Versión con HTML para mostrar en la tabla
+            displayNameHTML = `<span style="color: #004a99; font-weight: bold;">${f.carpeta}</span>/${f.name}`;
+            // Versión texto plano para el atributo title (evita que se rompa el HTML)
+            titleText = `${f.carpeta}/${f.name}`;
+        } else {
+            displayNameHTML = f.name;
+            titleText = f.name;
+        }
+
+        list += `
+        <li class="mb-1">
+            <a href="${BASE_URL}/${f.url}" target="_blank" title="${titleText}" class="text-decoration-none">
+                <i class="bi bi-paperclip text-secondary"></i> ${displayNameHTML}
+            </a>
+        </li>`;
+    });
+    list += `</ul>`;
+    return list;
+}
             },
             {
                 data: null,
