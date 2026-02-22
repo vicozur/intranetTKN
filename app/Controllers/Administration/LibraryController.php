@@ -51,7 +51,7 @@ class LibraryController extends BaseController
         $db = \Config\Database::connect();
         foreach ($data as &$row) {
             $files = $db->table('directory.file')
-                ->select('file_id, name, url, extencion')
+                ->select('file_id, name, url, extencion, carpeta')
                 ->where('library_id', $row['library_id'])
                 ->where('status', true)
                 ->get()
@@ -191,6 +191,7 @@ class LibraryController extends BaseController
                     'url'          => $fullRelativePath . $newName, // URL dinámica
                     'created_user' => session('username') ?? 'system',
                     'status'       => true,
+                    'carpeta'      => ($tipoCarga === "1" && $carpetaName !== "") ? $carpetaName : "",
                 ];
 
                 $fileModel->insert($fileData);

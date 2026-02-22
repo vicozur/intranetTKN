@@ -103,7 +103,6 @@ class LibraryModel extends Model
     }
 
     */
-
     public function getDatatables($start, $length, $searchValue, $orderColumn, $orderDir)
     {
         $builder = $this->db->table('directory.library l');
@@ -120,13 +119,13 @@ class LibraryModel extends Model
                 \'file_id\', f.file_id,
                 \'name\', f.name,
                 \'url\', f.url,
-                \'extencion\', f.extencion
+                \'extencion\', f.extencion,
+                \'carpeta\', f.carpeta
             ))
             FROM directory.file f
             WHERE f.library_id = l.library_id 
             AND f.status = true
-        ) AS files
-    ');
+        ) AS files');
         $builder->join('directory.category ca', 'ca.category_id = l.category_id', 'left');
 
         // 🔍 búsqueda

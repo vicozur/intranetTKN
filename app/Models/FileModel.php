@@ -14,7 +14,8 @@ class FileModel extends Model
         'extencion',
         'url',
         'created_user',
-        'status'
+        'status',
+        'carpeta'
     ];
     protected $useTimestamps    = true;
     protected $createdField     = 'created_at';

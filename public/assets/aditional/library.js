@@ -107,17 +107,24 @@ $(document).ready(function () {
                     }
 
                     let list = `<ul class="list-unstyled mb-0">`;
-                    files.forEach(f => {
+                    files.forEach((f) => {
+                        // Evaluamos si existe el dato de carpeta
+                        // Si f.carpeta existe, añadimos la carpeta y el separador, si no, cadena vacía
+                        let displayName =
+                        f.carpeta && f.carpeta.trim() !== ""
+                            ? `${f.carpeta}/${f.name}`
+                            : f.name;
+
                         list += `
-                            <li>
-                                <a href="${BASE_URL}/${f.url}" target="_blank" >
-                                    <i class="bi bi-paperclip"></i> ${f.name}
-                                </a>
-                            </li>`;
+                <li>
+                    <a href="${BASE_URL}${f.url}" target="_blank" title="${displayName}">
+                        <i class="bi bi-paperclip"></i> ${displayName}
+                    </a>
+                </li>`;
                     });
                     list += `</ul>`;
                     return list;
-                }
+                    }
             },
             {
                 data: null,
