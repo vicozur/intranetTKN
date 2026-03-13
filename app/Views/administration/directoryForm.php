@@ -6,6 +6,9 @@
     const CLIENT_URL = "<?= base_url('directorio') ?>";
 </script>
 
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
 <!-- Start row container-->
 <div class="row">
     <div>
@@ -23,12 +26,11 @@
                 <input type="hidden" id="directory_id" name="directory_id"
                     value="<?= isset($directory['directory_id']) ? esc($directory['directory_id']) : '' ?>" />
                 <select id="category" name="category" class="form-select">
-                    <?php foreach ($categoryList as $item): ?>
-                        <option value="<?= esc($item['category_id']) ?>"
-                            <?= isset($directory['category_id']) && $directory['category_id'] == $item['category_id'] ? 'selected' : '' ?>>
-                            <?= esc($item['name']) ?>
+                    <?php if (isset($directory['category_id'])): ?>
+                        <option value="<?= $directory['category_id'] ?>" selected>
+                            <?= $directory['category_name'] ?>
                         </option>
-                    <?php endforeach; ?>
+                    <?php endif; ?>
                 </select>
             </div>
 
@@ -160,7 +162,34 @@
     <hr>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+<script>
+$(document).ready(function() {
+    $('#category').select2({
+        theme: "bootstrap-5",
+        placeholder: 'Escriba para buscar (ej: vehi)',
+        minimumInputLength: 2, // Empieza a buscar tras escribir 2 letras
+        ajax: {
+            url: '<?= base_url('directorio/clienteForm/category') ?>', // Tu ruta en CI4
+            dataType: 'json',
+            delay: 250, // Espera 250ms después de escribir para no saturar el servidor
+            data: function (params) {
+                return {
+                    q: params.term // "q" llevará la palabra completa (ej: "vehi")
+                };
+            },
+            processResults: function (data) {
+                return {
+                    results: data
+                };
+            },
+            cache: true
+        }
+    });
+});
+</script>
 
 <script src="<?= base_url('assets/aditional/client.js') ?>"></script>
 <?php $this->endSection(); ?>

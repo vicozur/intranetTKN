@@ -89,6 +89,8 @@ $routes->get('directorio/clienteForm', 'Administration\DirectoryFormController::
 $routes->post('directorio/clienteForm/create', 'Administration\DirectoryFormController::create');
 $routes->post('directorio/clienteForm/update/(:num)', 'Administration\DirectoryFormController::update/$1');
 
+$routes->get('directorio/clienteForm/category', 'Administration\DirectoryFormController::buscarAjax');
+
 $routes->get('directorio/getcityList/(:num)', 'Administration\DirectoryFormController::getcityList/$1');
 
 //http://localhost/intranetTKN/public/directorio/getcityList/1

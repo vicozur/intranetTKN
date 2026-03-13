@@ -292,4 +292,27 @@ class DirectoryFormController extends BaseController
         return redirect()->to(site_url('directorio'))
             ->with('info', 'Operación cancelada por el usuario.');
     }
+
+    public function buscarAjax()
+    {
+        $searchTerm = $this->request->getGet('q');
+        //$model = new \App\Models\CategoryModel();
+
+        // Filtramos por el nombre
+        $categories = $this->categoryModel->where('clasifier', 'Directorio')
+                        ->groupStart() // Agrupamos para que el LIKE no rompa el WHERE
+                            ->like('name', $searchTerm)
+                        ->groupEnd()
+                        ->findAll(20);
+
+        $results = [];
+        foreach ($categories as $cat) {
+            $results[] = [
+                'id'   => $cat['category_id'],
+                'text' => $cat['name']
+            ];
+        }
+
+        return $this->response->setJSON($results);
+    }
 }
