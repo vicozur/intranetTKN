@@ -205,6 +205,7 @@ function openFileUploadModal(data) {
         $("#fileModal").modal("show");
     }
 
+/*
 $("#uploadForm").on("submit", function (e) {
     e.preventDefault();
 
@@ -296,7 +297,103 @@ $("#uploadForm").on("submit", function (e) {
         }
     });
 });
+*/
 
+$("#uploadForm").on("submit", function (e) {
+    e.preventDefault();
+
+    let formData = new FormData(this);
+
+    Swal.fire({
+        title: '¿Desea registrar los archivos?',
+        text: "La subida puede tardar dependiendo del tamaño de los archivos.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, subir",
+        cancelButtonText: "Cancelar",
+    }).then((r) => {
+        if (r.isConfirmed) {
+            $.ajax({
+                url: `${PROYECTO_URL}/file`,
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: "text", // 🟢 Forzamos text para validar manualmente el JSON sin romper JS
+                xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener(
+                        "progress",
+                        function (evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = Math.round(
+                                    (evt.loaded / evt.total) * 100
+                                );
+                                $("#uploadForm button[type='submit']").text(
+                                    `Subiendo... ${percentComplete}%`
+                                );
+                            }
+                        },
+                        false
+                    );
+                    return xhr;
+                },
+                beforeSend: function () {
+                    $("#uploadForm button[type='submit']")
+                        .prop("disabled", true)
+                        .text("Iniciando subida...");
+                },
+                success: function (response) {
+                    let res;
+                    try {
+                        res = typeof response === "object" ? response : JSON.parse(response);
+                    } catch (err) {
+                        // 🟢 Si PHP devolvió HTML de error en servidor de producción, lo capturamos aquí
+                        console.error("Respuesta HTML no válida del servidor:", response);
+                        Swal.fire(
+                            "Error en Servidor",
+                            "El servidor respondió con un error no estructurado. Revisa la consola (F12) o los logs de PHP.",
+                            "error"
+                        );
+                        return;
+                    }
+
+                    if (res.success) {
+                        if (typeof libraryTable !== "undefined") {
+                            libraryTable.ajax.reload(null, false);
+                        }
+
+                        Swal.fire(
+                            "Éxito",
+                            "Archivos subidos correctamente",
+                            "success"
+                        );
+
+                        $("#fileModal").modal("hide");
+                        $("#uploadForm")[0].reset();
+                        $("#fileList").html("");
+                    } else {
+                        // 🟢 Corregido: Usar res.message en lugar de response.message
+                        Swal.fire("Error", res.message || "Faltan datos o hubo un problema", "error");
+                    }
+                },
+                error: function (xhr) {
+                    let errorMsg = "Ocurrió un error en el servidor";
+                    if (xhr.status === 413) {
+                        errorMsg = "El archivo es demasiado grande para el servidor (Límite excedido)";
+                    }
+                    Swal.fire("Error", errorMsg, "error");
+                    console.error("Error AJAX:", xhr.responseText);
+                },
+                complete: function () {
+                    $("#uploadForm button[type='submit']")
+                        .prop("disabled", false)
+                        .text("Guardar");
+                }
+            });
+        }
+    });
+});
 
 function toggleStatus(id, currentStatus) {
     const isActive = currentStatus === true || currentStatus === "t";
